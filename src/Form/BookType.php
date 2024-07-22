@@ -24,7 +24,7 @@ class BookType extends AbstractType
                 'attr' => ['class' => 'form-control', 'placeholder' => 'Enter author name'],
             ])
             ->add('publicationYear', NumberType::class, [
-                'label' => 'Publication Year',
+                'label' => 'PublicationYear',
                 'attr' => ['class' => 'form-control', 'placeholder' => 'Enter publication year'],
             ])
             ->add('isbn', TextType::class, [
