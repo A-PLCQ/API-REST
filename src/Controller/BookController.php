@@ -53,9 +53,13 @@ class BookController extends AbstractController
     }
 
     #[Route('/books', name: 'book_create', methods: ['POST'])]
-    public function createBook(Request $request): Response
+    public function createBook(Request $request): JsonResponse
     {
-        $data = $request->request->all();
+        $data = json_decode($request->getContent(), true);
+
+        if (empty($data['title']) || empty($data['author']) || empty($data['publicationYear']) || empty($data['isbn'])) {
+            return $this->json(['error' => 'Missing required fields'], Response::HTTP_BAD_REQUEST);
+        }
 
         $book = new Book();
         $book->setTitle($data['title']);
@@ -65,15 +69,19 @@ class BookController extends AbstractController
 
         $errors = $this->validator->validate($book);
         if (count($errors) > 0) {
-            return $this->render('book/new.html.twig', [
-                'errors' => $errors,
-            ]);
+            return $this->json(['errors' => (string) $errors], Response::HTTP_BAD_REQUEST);
         }
 
         $this->entityManager->persist($book);
         $this->entityManager->flush();
 
-        return $this->redirectToRoute('book_list');
+        return $this->json([
+            'id' => $book->getId(),
+            'title' => $book->getTitle(),
+            'author' => $book->getAuthor(),
+            'publicationYear' => $book->getPublicationYear(),
+            'isbn' => $book->getIsbn()
+        ], Response::HTTP_CREATED);
     }
 
     #[Route('/books/{id}', name: 'get_book', methods: ['GET'])]
@@ -106,10 +114,18 @@ class BookController extends AbstractController
             return $this->json(['error' => 'Book not found'], Response::HTTP_NOT_FOUND);
         }
 
-        $book->setTitle($data['title'] ?? $book->getTitle());
-        $book->setAuthor($data['author'] ?? $book->getAuthor());
-        $book->setPublicationYear($data['publicationYear'] ?? $book->getPublicationYear());
-        $book->setIsbn($data['isbn'] ?? $book->getIsbn());
+        if (isset($data['title'])) {
+            $book->setTitle($data['title']);
+        }
+        if (isset($data['author'])) {
+            $book->setAuthor($data['author']);
+        }
+        if (isset($data['publicationYear'])) {
+            $book->setPublicationYear($data['publicationYear']);
+        }
+        if (isset($data['isbn'])) {
+            $book->setIsbn($data['isbn']);
+        }
 
         $errors = $this->validator->validate($book);
         if (count($errors) > 0) {
@@ -118,7 +134,13 @@ class BookController extends AbstractController
 
         $this->entityManager->flush();
 
-        return $this->json($book);
+        return $this->json([
+            'id' => $book->getId(),
+            'title' => $book->getTitle(),
+            'author' => $book->getAuthor(),
+            'publicationYear' => $book->getPublicationYear(),
+            'isbn' => $book->getIsbn(),
+        ]);
     }
 
     #[Route('/books/{id}', name: 'delete_book', methods: ['DELETE'])]

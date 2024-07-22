@@ -27,12 +27,19 @@ class Book
 
     #[ORM\Column(type: 'integer')]
     #[Assert\NotBlank(message: 'The publication year cannot be blank.')]
-    #[Assert\Range(min: 1900, max: 2100, notInRangeMessage: 'The publication year must be between {{ min }} and {{ max }}.')]
+    #[Assert\Range(
+        min: 1900,
+        max: 2100,
+        notInRangeMessage: 'The publication year must be between {{ min }} and {{ max }}.'
+    )]
     private ?int $publicationYear = null;
 
     #[ORM\Column(type: 'string', length: 13, unique: true)]
     #[Assert\NotBlank(message: 'The ISBN cannot be blank.')]
-    #[Assert\Isbn(type: 'isbn13', message: 'The ISBN "{{ value }}" is not a valid ISBN-13.')]
+    #[Assert\Isbn(
+        type: 'isbn13',
+        message: 'The ISBN "{{ value }}" is not a valid ISBN-13.'
+    )]
     private ?string $isbn = null;
 
     public function getId(): ?int
